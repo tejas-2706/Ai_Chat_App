@@ -10,6 +10,7 @@ export async function Gemini_AI(Prompt: string) {
       thinkingConfig: {
         thinkingBudget: 0, // Disables thinking
       },
+      systemInstruction: "Give me response in such a way that my react-markdown can process it easilt for beautify markdown output!!"
     }
   });
   console.log(response.text);
