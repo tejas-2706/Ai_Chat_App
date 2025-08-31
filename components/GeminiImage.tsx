@@ -1,19 +1,37 @@
 "use client"
-import { GeminiStream } from '@/lib/GeminiStream'
 import React, { useEffect, useState } from 'react'
-import ReactMarkdown from "react-markdown"
-import remarkGfm from "remark-gfm"
-import { CodeBlock } from './CodeBlock'
-
-export const GeminiChat = () => {
+import Image from 'next/image';
+export const GeminiImage = () => {
     const [prompt, setPrompt] = useState("");
     const [response, setResponse] = useState("");
     const [isLoading, setIsLoading] = useState(false);
+    useEffect(()=>{
+        const lastImage = localStorage.getItem("lastGeneratedImage");
+        if (lastImage){
+            setResponse(lastImage);
+        }
+    },[])
     async function handleSubmit() {
-        setIsLoading(true);
-        setResponse("");
-        await GeminiStream(prompt, setResponse)
-        setIsLoading(false);
+        try {
+            setIsLoading(true);
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/gen-image`, {
+                method: 'POST',
+                body: JSON.stringify({prompt})
+            });
+            const result = await response.json();
+            console.log(result);
+            if (result){
+                setResponse("");
+                localStorage.setItem("lastGeneratedImage", result.data);
+                setResponse(result.data);
+            }
+        } catch (error) {
+            console.log("Error is : ", error);
+        }finally{
+            setPrompt("");
+            setIsLoading(false);
+        }
+
     }
     return (
         <div className='flex flex-col h-screen'>
@@ -21,19 +39,10 @@ export const GeminiChat = () => {
                 <div className='flex justify-center my-2'>
                     {response ?
                         <div className="rounded-2xl p-4 max-w-[60%] bg-[#212121]">
-                            <ReactMarkdown
-                                remarkPlugins={[remarkGfm]}
-                                components={{
-                                    code: CodeBlock,
-                                    p: ({ children }) => <>{children}</>
-                                }}
-                            >
-                                {response}
-                            </ReactMarkdown>
-                        </div>
-                        :
-                        <div>Start Chat</div>
-                    }
+                            <Image src={`/${response}.png`} alt="Generated AI Image" width={600} height={600}/>
+                        </div> :
+                        <div>No image Generated</div>
+                     } 
                 </div>
             </div>
             <div className='flex justify-center gap-4 mb-2'>

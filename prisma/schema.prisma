@@ -14,6 +14,8 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// one user has many conversations 
+// one conversation can have many chats
 
 model User {
   id Int @id @default(autoincrement())
@@ -22,4 +24,31 @@ model User {
   password String 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  conversations Conversation[]
+}
+
+model Conversation {
+  id Int @id @default(autoincrement())
+  title String?
+  UserId Int 
+  user User @relation(fields: [UserId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  chats Chat[]
+}
+
+model Chat {
+  id Int @id @default(autoincrement())
+  role Role 
+  content String
+  metadata Json?
+  ConversationId Int 
+  conversation Conversation @relation(fields: [ConversationId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum Role {
+  User
+  Assistant
 }
